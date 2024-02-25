@@ -51,19 +51,19 @@ def concentration_kgN_box(concentration,volume, molec_weight):
 #30 day simulation
 NO_molec_cm3 = []
 NO_kgN_box = []
-time_step = np.arange(0,30 * 24 + 1)
+time_step = np.arange(0,30 * 24 + 1)/24
 
 for i in range(len(time_step)):
     if time_step[i] == 0:
         old_concentration = pptv_concentration(NOx_initial_value)
         NO_kgN_box.append(concentration_kgN_box(old_concentration,1,N_molec_weight))
-    elif 0 < time_step[i] <= 24 * 5:
+    elif 0 < time_step[i] <= 5:
         P = kgN_day_to_molec_cm3_hr(NOx_emission_ocean,N_molec_weight,1)
         L = loss_term(NOx_lifetime)
         new_concentration = diff_eq_chem_constituent(P,L,old_concentration,1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration,1,N_molec_weight))
         old_concentration = new_concentration
-    elif 24 * 5 < time_step[i] <= 24 * 20:
+    elif 5 < time_step[i] <= 20:
         P = kgN_day_to_molec_cm3_hr(NOx_emission_land, N_molec_weight, 1)
         L = loss_term(NOx_lifetime)
         new_concentration = diff_eq_chem_constituent(P, L, old_concentration, 1)
@@ -75,8 +75,7 @@ for i in range(len(time_step)):
         new_concentration = diff_eq_chem_constituent(P, L, old_concentration, 1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration,1,N_molec_weight))
         old_concentration = new_concentration
-time_step_days = time_step / 24
-plt.plot(time_step_days,NO_kgN_box)
+plt.plot(time_step,NO_kgN_box)
 plt.ylabel("$NO_{X}$ Concentration [KgN/box]")
 plt.ylim(0)
 plt.xlim(0,30)
