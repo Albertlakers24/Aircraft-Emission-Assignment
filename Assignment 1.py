@@ -7,7 +7,7 @@ CO_emission_ocean = 0  #kg/day
 CO_emission_land = 14  #kg/day
 CH4_emission_ocean = 0  #kg/day
 CH4_emission_land = 0.21  #kg/day
-NOx_lifetime = 1.5 #days
+NOx_lifetime = 1.5      #days
 NOx_initial_value = 15  #pptv
 CO_initial_value = 130  #ppbv
 CH4_initial_value = 2100  #ppbv
@@ -18,8 +18,7 @@ Ratio_O3 = 6 * 10 ** (6) #-
 Air_density = 1     #kg/m^3
 Temperature = 298   #K
 avogadro_constant = 6.02 * 10 ** (26) #molec/kmol
-NOx_initial_value = 15 #pptv
-H_molec_weight = 1  #kg/kmol
+H_molec_weight = 1  #kg/kmolNO
 C_molec_weight = 12  #kg/kmol
 N_molec_weight = 14  #kg/kmol
 O_molec_weight = 16  #kg/kmol
@@ -28,21 +27,21 @@ air_density_molec_cm3 = avogadro_constant / air_molec_weight * (1/(10**6)) #mole
 
 #Functions
 def kgN_day_to_molec_cm3_hr(value,molec_weight,volume):
-    value_molec_cm3_hr = value * avogadro_constant / molec_weight / (volume * 10 ** (15)) / 24
+    value_molec_cm3_hr = value * avogadro_constant * (1/molec_weight) * (1 /(volume * 10 ** (15))) * (1 /24)
     return value_molec_cm3_hr
 
 def loss_term(life_time): #Convert from life time to loss term (1/hr)
-    L = 1 / np.exp(life_time * 24)
+    L = 1 / (life_time * 24)
     return L
 
 def diff_eq_chem_constituent(P,L,X,dt):
     dX_dt = P - L * X
-    X_t_1 = (dX_dt + P * dt)/ (1 + L * dt)
+    X_t_1 = (X + dX_dt + P * dt)/ (1 + L * dt)
     return X_t_1
 
-def VMR(C):
-    VMR = air_molec_weight * C * 10 ** (6) * avogadro_constant ** (-1) * Air_density ** (-1)
-    return VMR
+# def VMR(C):
+#     VMR = air_molec_weight * C * 10 ** (6) * avogadro_constant ** (-1) * Air_density ** (-1)
+#     return VMR
 
 def pptv_concentration(pptv_value):
     concentration = air_density_molec_cm3 * pptv_value * 10 ** (-12)
@@ -51,6 +50,7 @@ def concentration_kgN_box(concentration,volume, molec_weight):
     kgN_box = concentration * volume * 10 ** 15 * molec_weight / avogadro_constant
     return kgN_box
 #30 day simulation
+NO_molec_cm3 = []
 NO_kgN_box = []
 time_step = np.arange(0,30 * 24 + 1)
 
@@ -58,29 +58,28 @@ for i in range(len(time_step)):
     if time_step[i] == 0:
         old_concentration = pptv_concentration(NOx_initial_value)
         NO_kgN_box.append(concentration_kgN_box(old_concentration,1,N_molec_weight))
-        i += 1
     elif 0 < time_step[i] <= 24 * 5:
         P = kgN_day_to_molec_cm3_hr(NOx_emission_ocean,N_molec_weight,1)
         L = loss_term(NOx_lifetime)
         new_concentration = diff_eq_chem_constituent(P,L,old_concentration,1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration,1,N_molec_weight))
         old_concentration = new_concentration
-        i += 1
     elif 24 * 5 < time_step[i] <= 24 * 20:
         P = kgN_day_to_molec_cm3_hr(NOx_emission_land, N_molec_weight, 1)
         L = loss_term(NOx_lifetime)
         new_concentration = diff_eq_chem_constituent(P, L, old_concentration, 1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration,1,N_molec_weight))
         old_concentration = new_concentration
-        i += 1
     else:
         P = kgN_day_to_molec_cm3_hr(NOx_emission_ocean, N_molec_weight, 1)
         L = loss_term(NOx_lifetime)
         new_concentration = diff_eq_chem_constituent(P, L, old_concentration, 1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration,1,N_molec_weight))
         old_concentration = new_concentration
-        i += 1
-plt.plot(time_step,NO_kgN_box)
+time_step_days = time_step / 24
+plt.plot(time_step_days,NO_kgN_box)
 plt.ylabel("$NO_{X}$ Concentration [KgN/box]")
-plt.xlabel("Time [Hours]")
+plt.ylim(0)
+plt.xlim(0,30)
+plt.xlabel("Time [Days]")
 plt.show()
