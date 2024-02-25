@@ -36,12 +36,11 @@ def loss_term(life_time): #Convert from life time to loss term (1/hr)
 
 def diff_eq_chem_constituent(P,L,X,dt):
     dX_dt = P - L * X
-    X_t_1 = (X + dX_dt + P * dt)/ (1 + L * dt)
+    X_t_1 = (dX_dt + X + P * dt)/ (1 + L * dt)
     return X_t_1
-
-# def VMR(C):
-#     VMR = air_molec_weight * C * 10 ** (6) * avogadro_constant ** (-1) * Air_density ** (-1)
-#     return VMR
+def VMR(C):
+    VMR = air_molec_weight * C * 10 ** (6) * avogadro_constant ** (-1) * Air_density ** (-1)
+    return VMR
 
 def pptv_concentration(pptv_value):
     concentration = air_density_molec_cm3 * pptv_value * 10 ** (-12)
@@ -82,4 +81,5 @@ plt.ylabel("$NO_{X}$ Concentration [KgN/box]")
 plt.ylim(0)
 plt.xlim(0,30)
 plt.xlabel("Time [Days]")
+plt.grid()
 plt.show()
