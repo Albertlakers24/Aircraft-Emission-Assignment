@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 #Data
-NOx_emission_ocean = 0  #kgN/day
+NOx_emission_ocean = 0  ##kgN/day
 NOx_emission_land = 0.12  #kgN/day
 CO_emission_ocean = 0  #kg/day
 CO_emission_land = 14  #kg/day
@@ -35,8 +35,7 @@ def loss_term(life_time): #Convert from life time to loss term (1/hr)
     return L
 
 def diff_eq_chem_constituent(P,L,X,dt):
-    dX_dt = P - L * X
-    X_t_1 = (dX_dt + X + P * dt)/ (1 + L * dt)
+    X_t_1 = (X + P * dt)/ (1 + L * dt)
     return X_t_1
 def VMR(C):
     VMR = air_molec_weight * C * 10 ** (6) * avogadro_constant ** (-1) * Air_density ** (-1)
