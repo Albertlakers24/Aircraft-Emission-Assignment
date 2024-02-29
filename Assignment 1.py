@@ -38,3 +38,18 @@ def diff_eq_chem_constituent(P,L,X,dt):
     dX_dt = P - L * X
     X_t_1 = (dX_dt + P * dt)/ (1 + L * dt)
     return X_t_1
+
+#Part B
+def reaction_rate_constants(T):
+    k1 = 3*10**-12 * np.exp(-1500/T)
+    k2 = 5*10**-3
+    k3 = 5.1*10**-12 * np.exp(210/T)
+    return k1, k2, k3
+
+k1,k2,k3 = reaction_rate_constants(Temperature)
+
+conO3 = 40*10**(-9) * 6.02 * 10 ** (23) / 29 * 0.001
+NONO_2 = k2/(k1*conO3) + k3/k1 * 5*10**(-6)
+NONO_x = 1/(1 + 1/NONO_2)
+
+print(NONO_2)
