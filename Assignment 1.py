@@ -1,4 +1,5 @@
 import numpy as np
+from matplotlib import pyplot as plt
 #Data
 NOx_emission_ocean = 0  ##kgN/day
 NOx_emission_land = 0.12  #kgN/day
@@ -31,6 +32,7 @@ def loss_term(life_time): #Convert from life time to loss term (1/hr)
 def diff_eq_chem_constituent(P,L,X,dt):
     X_t_1 = (X + P * dt)/ (1 + L * dt)
     return X_t_1
+
 def VMR(C):
     VMR = air_molec_weight * C / (avogadro_constant) * 10**(6)
     return VMR
@@ -42,9 +44,17 @@ def pptv_concentration(pptv_value):
 def ppbv_concentration(ppbv_value):
     concentration = air_density_molec_cm3 * ppbv_value * 10 ** (-9)
     return concentration
+
 def concentration_kgN_box(concentration,volume, molec_weight):
     kgN_box = concentration * volume * 10 ** 15 * molec_weight / avogadro_constant
     return kgN_box
+
+def reaction_rate_constants(T):
+    k1 = 3*10**-12 * np.exp(-1500/T)
+    k2 = 5*10**-3
+    k3 = 5.1*10**-12 * np.exp(210/T)
+    return k1, k2, k3
+
 def k6_k7_k8(temp):
     k6 = 3.3 * 10 **(-12) * np.exp(270/temp) * 3600
     k7 = 1 * 10 **(-14) * np.exp(-490/temp) * 3600
@@ -137,14 +147,7 @@ plt.grid()
 plt.show()
 
 #Part B
-def reaction_rate_constants(T):
-    k1 = 3*10**-12 * np.exp(-1500/T)
-    k2 = 5*10**-3
-    k3 = 5.1*10**-12 * np.exp(210/T)
-    return k1, k2, k3
-
 k1,k2,k3 = reaction_rate_constants(Temperature)
-
 conO3 = 40*10**(-9) * 6.02 * 10 ** (23) / 29 * 0.001
 NONO_2 = k2/(k1*conO3) + k3/k1 * 5*10**(-6)
 NONO_x = 1/(1 + 1/NONO_2)
