@@ -1,5 +1,4 @@
 import numpy as np
-from matplotlib import pyplot as plt
 #Data
 NOx_emission_ocean = 0  ##kgN/day
 NOx_emission_land = 0.12  #kgN/day
@@ -126,6 +125,7 @@ plt.xlim(0,30)
 plt.xlabel("Time [Days]")
 plt.grid()
 plt.show()
+
 plt.plot(NO_VMR[120:481],ozone_loss_molec_cm3_s[120:481], label = "Loss Term")
 plt.plot(NO_VMR[120:481],ozone_production_molec_cm3_s[120:481],label = "Production Term")
 plt.plot(NO_VMR[120:481],ozone_net_molec_cm3_s[120:481], label = "Net Ozone")
@@ -135,3 +135,18 @@ plt.xscale('log')
 plt.legend()
 plt.grid()
 plt.show()
+
+#Part B
+def reaction_rate_constants(T):
+    k1 = 3*10**-12 * np.exp(-1500/T)
+    k2 = 5*10**-3
+    k3 = 5.1*10**-12 * np.exp(210/T)
+    return k1, k2, k3
+
+k1,k2,k3 = reaction_rate_constants(Temperature)
+
+conO3 = 40*10**(-9) * 6.02 * 10 ** (23) / 29 * 0.001
+NONO_2 = k2/(k1*conO3) + k3/k1 * 5*10**(-6)
+NONO_x = 1/(1 + 1/NONO_2)
+
+print(NONO_2)
