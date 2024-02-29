@@ -33,7 +33,7 @@ def diff_eq_chem_constituent(P,L,X,dt):
     X_t_1 = (X + P * dt)/ (1 + L * dt)
     return X_t_1
 def VMR(C):
-    VMR = air_molec_weight * C * 10 ** (6) * avogadro_constant ** (-1) * Air_density ** (-1)
+    VMR = air_molec_weight * C / (avogadro_constant) * 10**(6)
     return VMR
 
 def pptv_concentration(pptv_value):
@@ -57,7 +57,8 @@ def ozone_diff(conc_NO,conc_O3,temp):
     ozone_production = k6 * HO2_constant * conc_NO
     ozone_loss = k7 * HO2_constant * conc_O3 + k8 * OH_constant * conc_O3
     ozone_net = ozone_production - ozone_loss
-    return ozone_production, ozone_loss, ozone_net
+    L_ozone = k7 * HO2_constant + k8 * OH_constant
+    return ozone_production, ozone_loss, ozone_net, L_ozone
 
 #30 NOx day simulation
 NO_kgN_box = []
@@ -70,7 +71,6 @@ time_step = np.arange(0,30 * 24 + 1)/24
 
 for i in range(len(time_step)):
     L_NO = loss_term(NOx_lifetime)
-    L_ozone = 0
     if time_step[i] == 0:
         old_concentration_NO = pptv_concentration(NOx_initial_value)
         NO_kgN_box.append(concentration_kgN_box(old_concentration_NO,1,N_molec_weight))
@@ -83,7 +83,7 @@ for i in range(len(time_step)):
     elif 0 < time_step[i] <= 5:
         P_NO = kgN_day_to_molec_cm3_hr(NOx_emission_ocean,N_molec_weight,1)
         new_concentration_NO = diff_eq_chem_constituent(P_NO,L_NO,old_concentration_NO,1)
-        ozone_production, ozone_loss, ozone_net = ozone_diff(old_concentration_NO, old_concentration_Ozone, Temperature)
+        ozone_production, ozone_loss, ozone_net, L_ozone = ozone_diff(old_concentration_NO, old_concentration_Ozone, Temperature)
         new_concentration_Ozone = diff_eq_chem_constituent(ozone_net, L_ozone, old_concentration_Ozone, 1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration_NO,1,N_molec_weight))
         NO_VMR.append(VMR(new_concentration_NO))
@@ -96,7 +96,7 @@ for i in range(len(time_step)):
     elif 5 < time_step[i] <= 20:
         P_NO = kgN_day_to_molec_cm3_hr(NOx_emission_land, N_molec_weight, 1)
         new_concentration_NO = diff_eq_chem_constituent(P_NO, L_NO, old_concentration_NO, 1)
-        ozone_production, ozone_loss, ozone_net = ozone_diff(old_concentration_NO, old_concentration_Ozone, Temperature)
+        ozone_production, ozone_loss, ozone_net, L_ozone = ozone_diff(old_concentration_NO, old_concentration_Ozone, Temperature)
         new_concentration_Ozone = diff_eq_chem_constituent(ozone_net, L_ozone, old_concentration_Ozone, 1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration_NO, 1, N_molec_weight))
         NO_VMR.append(VMR(new_concentration_NO))
@@ -109,7 +109,7 @@ for i in range(len(time_step)):
     else:
         P_NO = kgN_day_to_molec_cm3_hr(NOx_emission_ocean, N_molec_weight, 1)
         new_concentration_NO = diff_eq_chem_constituent(P_NO, L_NO, old_concentration_NO, 1)
-        ozone_production, ozone_loss, ozone_net = ozone_diff(old_concentration_NO, old_concentration_Ozone, Temperature)
+        ozone_production, ozone_loss, ozone_net, L_ozone= ozone_diff(old_concentration_NO, old_concentration_Ozone, Temperature)
         new_concentration_Ozone = diff_eq_chem_constituent(ozone_net, L_ozone, old_concentration_Ozone, 1)
         NO_kgN_box.append(concentration_kgN_box(new_concentration_NO, 1, N_molec_weight))
         NO_VMR.append(VMR(new_concentration_NO))
@@ -126,11 +126,10 @@ plt.xlim(0,30)
 plt.xlabel("Time [Days]")
 plt.grid()
 plt.show()
-
-plt.plot(NO_VMR[120:481],ozone_production_molec_cm3_s[120:481],label = "Production Term")
 plt.plot(NO_VMR[120:481],ozone_loss_molec_cm3_s[120:481], label = "Loss Term")
+plt.plot(NO_VMR[120:481],ozone_production_molec_cm3_s[120:481],label = "Production Term")
 plt.plot(NO_VMR[120:481],ozone_net_molec_cm3_s[120:481], label = "Net Ozone")
-plt.ylabel("Change in Ozone Concentration [molec/$cm^3$/s]")
+plt.ylabel("Ozone Production Rate [molec/$cm^3$/s]")
 plt.xlabel("$NO_X$ Volume Mixing Ratio [mol/mol]")
 plt.xscale('log')
 plt.legend()
