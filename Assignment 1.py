@@ -61,9 +61,9 @@ def k6_k7_k8(temp):
     k8 = 1.7 * 10 **(-12) * np.exp(-940/temp) * 3600
     return k6,k7,k8
 
-def ozone_diff(conc_NO,conc_O3,temp):
+def ozone_diff(conc_NOx,conc_O3,temp):
     k6,k7,k8 = k6_k7_k8(temp)
-    ozone_production = k6 * HO2_constant * conc_NO
+    ozone_production = k6 * HO2_constant * conc_NOx * (1/(1+(1/0.3)))
     ozone_loss = k7 * HO2_constant * conc_O3 + k8 * OH_constant * conc_O3
     ozone_net = ozone_production - ozone_loss
     L_ozone = k7 * HO2_constant + k8 * OH_constant
@@ -151,5 +151,3 @@ k1,k2,k3 = reaction_rate_constants(Temperature)
 conO3 = 40*10**(-9) * 6.02 * 10 ** (23) / 29 * 0.001
 NONO_2 = k2/(k1*conO3) + k3/k1 * 5*10**(-6)
 NONO_x = 1/(1 + 1/NONO_2)
-
-print(NONO_2)
